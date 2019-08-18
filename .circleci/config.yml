@@ -2,8 +2,10 @@ version: 2.0
 jobs:
   build:
     docker:
-      - image: circleci/ruby
+      - image: centos:7
     steps:
       - checkout
-      - run: echo Hello CircleCI
+      - run: ci/setup.sh
+      - run: ci/build.sh
+      - run: ci/deploy.sh
 

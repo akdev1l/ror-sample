@@ -2,6 +2,6 @@ jobs:
   build:
     docker: circleci/ruby
   steps:
-    - checkout
+    - checkout:
     - run: echo Hello CircleCI
 

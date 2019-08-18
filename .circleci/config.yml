@@ -7,5 +7,10 @@ jobs:
       - checkout
       - run: ci/setup.sh
       - run: ci/build.sh
+   
+  deploy:
+    docker:
+      - image: centos:7
+    steps:
       - run: ci/deploy.sh
 

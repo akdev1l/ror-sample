@@ -1,6 +1,8 @@
+version: 2.0
 jobs:
   build:
-    docker: circleci/ruby
+    docker:
+      - image: circleci/ruby
     steps:
       - checkout
       - run: echo Hello CircleCI

@@ -1,0 +1,70 @@
+---
+- name: create application user
+  user:
+    name: "{{app_user}}"
+    state: present
+    home: "{{app_deploy_dir}}"
+    system: yes
+    shell: /sbin/nologin
+
+- name: 
+  authorized_key:
+    user: "{{app_user}}"
+    state: present
+    key: "{{ lookup('file', 'id_rsa.pub') }}"
+    
+- name: install passenger and nginx
+  yum:
+    name: nginx passenger
+    state: present
+
+- name: enable passenger nginx module
+  copy:
+    src: passenger.conf
+    dest: /etc/nginx/conf.d/passenger.conf
+
+- name: restart nginx
+  systemd:
+    name: nginx
+    state: restarted
+    enabled: yes
+
+- name: deploy web application
+  unarchive:
+    src: "{{ app_release_archive }}"
+    dest: "{{ app_deploy_dir }}"
+
+- name: update dependencies
+  shell: bundle install --deployment --without development test
+
+- name: deploy database config
+  template:
+    owner: "{{ app_user }}"
+    group: "{{ app_group }}"
+    mode: '600'
+    src: config/database.yml.j2
+    dest: "{{ app_deploy_dir }}/config/database.yml"
+
+- name: deploy secrets
+  template:
+    owner: "{{ app_user }}"
+    group: "{{ app_group }}"
+    mode: '600'
+    src: config/secrets.yml.j2
+    dest: "{{ app_deploy_dir }}/config/secrets.yml"
+
+- name: check db/config directory permissions
+  file:
+    directory: yes
+    mode: '700'
+    path: "{{ item }}"
+  loop:
+    - "{{ app_deploy_dir }}/config"
+    - "{{ app_deploy_dir }}/db"
+
+- name: deploy nginx configuration
+  template:
+    src: nginx/conf.d/hello.conf
+    dest: /etc/nginx/conf.d/hello.conf
+    
+# tasks file for deploy-app
